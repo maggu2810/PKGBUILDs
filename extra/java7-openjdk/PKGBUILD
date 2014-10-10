@@ -35,6 +35,17 @@ makedepends=('jdk7-openjdk' 'libxp' 'libxslt'
 
 _icedtea_url=http://icedtea.classpath.org/download
 _drops_url=${_icedtea_url}/drops/icedtea7/${_icedtea_ver}
+# In the IcedTea Makefile the DROP_URL is defined as followed:
+# DROP_URL = http://icedtea.classpath.org/download/drops
+# There is already a _drops_url, so let's use _drops_url_simple
+_drops_url_simple=${_icedtea_url}/drops
+# IcedTea Makefile: JAMVM_BASE_URL = $(DROP_URL)/jamvm
+_jamvm_base_url=${_drops_url_simple}/jamvm
+# The version is defined in the Makefile, have to hardcode it.
+_jamvm_version=ec18fb9e49e62dce16c5094ef1527eed619463aa
+# See Makefile ...
+_jamvm_src_zip=jamvm-${_jamvm_version}.tar.gz
+_jamvm_url=${_jamvm_base_url}/${_jamvm_src_zip}
 source=(${_icedtea_url}/source/icedtea-${_icedtea_ver}.tar.gz
         icedtea_${_icedtea_ver}_openjdk.tar.bz2::${_drops_url}/openjdk.tar.bz2
         icedtea_${_icedtea_ver}_corba.tar.bz2::${_drops_url}/corba.tar.bz2
@@ -43,6 +54,7 @@ source=(${_icedtea_url}/source/icedtea-${_icedtea_ver}.tar.gz
         icedtea_${_icedtea_ver}_jdk.tar.bz2::${_drops_url}/jdk.tar.bz2
         icedtea_${_icedtea_ver}_langtools.tar.bz2::${_drops_url}/langtools.tar.bz2
         icedtea_${_icedtea_ver}_hotspot.tar.bz2::${_drops_url}/hotspot.tar.bz2
+        ${_jamvm_src_zip}::${_jamvm_url}
         fontconfig-paths.diff
         openjdk7_nonreparenting-wm.diff
         giflib_5.1.diff)
@@ -54,6 +66,7 @@ sha256sums=('6e36b5922d6a30b28a3387c60cf698461f12ae6471c9deab9c30763cb3505988'
             '992a726be72bce1ad9a275b1fc1782c0beb0f80c50de35a989258a56fdfd2ffd'
             '5f04fffdcbb4a76cd57c8319c676537c9481625e0c686e172a152deeb7871811'
             'b8c1f0e6560a3300d145784c1a73e02ddecbad38b8ce9511a930b1e7599c8c51'
+            '31810266666c23822942aac62a78019c2c4589e1c5ee48329cbf42652d4437bc'
             '9ad943ceb3dbcdf45d72974fc3667886a7ed65c69ab9abc17be5412827551a7f'
             '56b919ababb13bd6afdcdaceb112b529b6e82539255f2dae9a7e5eb91645164b'
             '77fba3032edf6cce549cd4e174d9296684b20f4589dc59179fcc8cba7426a4e9')
@@ -64,7 +77,8 @@ noextract=(icedtea_${_icedtea_ver}_openjdk.tar.bz2
            icedtea_${_icedtea_ver}_jaxws.tar.bz2
            icedtea_${_icedtea_ver}_jdk.tar.bz2
            icedtea_${_icedtea_ver}_langtools.tar.bz2
-           icedtea_${_icedtea_ver}_hotspot.tar.bz2)
+           icedtea_${_icedtea_ver}_hotspot.tar.bz2
+           ${_jamvm_src_zip})
 
  [ "$CARCH" = "x86_64" ] && _JARCH=amd64
  [ "$CARCH" = "i686" ] && _JARCH=i386
@@ -112,12 +126,14 @@ build() {
         --with-jaxws-src-zip="${srcdir}/icedtea_${_icedtea_ver}_jaxws.tar.bz2" \
         --with-jdk-src-zip="${srcdir}/icedtea_${_icedtea_ver}_jdk.tar.bz2" \
         --with-langtools-src-zip="${srcdir}/icedtea_${_icedtea_ver}_langtools.tar.bz2" \
+        --with-jamvm-src-zip="${srcdir}/${_jamvm_src_zip}" \
         --enable-nss \
         --with-rhino \
         --with-abs-install-dir=${_jvmdir} \
         --enable-infinality=no \
         --disable-docs \
-        --enable-zero
+        --enable-zero \
+        --with-additional-vms=jamvm
     make
 }
 
